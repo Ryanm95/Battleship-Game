@@ -13,6 +13,7 @@ public class GUI extends JFrame implements ActionListener{
 
     private Cell[][] myOcean = new Cell[10][10];        // grid where my boats will be on
     private Cell[][] oppOcean = new Cell[10][10];       // grid where opp boats will be
+    private Cell[] choices = new Cell[5];
     private JPanel container = new JPanel(new BorderLayout());      // will hold all panels
     private JPanel myPanel = new JPanel(new GridLayout(10, 10, -5, -5));        // holds my ocean
     private JPanel oppPanel = new JPanel(new GridLayout(10, 10, -5, -5));       // holds opp ocean
@@ -24,7 +25,7 @@ public class GUI extends JFrame implements ActionListener{
     public GUI(){
         super("Battleship");
         getContentPane().setBackground(Color.gray);
-
+        ships.setLayout(new BoxLayout(ships, BoxLayout.Y_AXIS));
         setupOceans();
         oceans.setLayout(new BoxLayout(oceans, BoxLayout.Y_AXIS));
         oceans.add(myPanel);
@@ -40,8 +41,6 @@ public class GUI extends JFrame implements ActionListener{
 
     public void actionPerformed(ActionEvent e) {
         Cell temp = (Cell) e.getSource();
-
-
     }
 
     private void setupOceans(){
