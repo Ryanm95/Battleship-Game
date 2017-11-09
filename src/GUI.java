@@ -5,6 +5,7 @@ import java.lang.*;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.management.JMException;
 import javax.swing.*;
 
 
@@ -17,6 +18,7 @@ public class GUI extends JFrame implements ActionListener{
     private JPanel oppPanel = new JPanel(new GridLayout(10, 10, -5, -5));       // holds opp ocean
     private JPanel oceans = new JPanel();       // holds opp and my ocean grid
     private JPanel ships = new JPanel();
+    private final String[] boats = {"Carrier", "BattleShip", "Destroyer", "Submarine", "PatrolBoat"};
 
 
     public GUI(){
@@ -38,6 +40,7 @@ public class GUI extends JFrame implements ActionListener{
 
     public void actionPerformed(ActionEvent e) {
         Cell temp = (Cell) e.getSource();
+
 
     }
 
@@ -67,10 +70,39 @@ public class GUI extends JFrame implements ActionListener{
                 new ActionListener(){  // anonymous inner class
                     // terminate application when user clicks exitItem
                     public void actionPerformed(ActionEvent event){
-                       //TODO: add about message
+                        JOptionPane.showMessageDialog( GUI.this,
+                                "Authors:\n   Ryan Moran           -> rmoran8\n" +
+                                        "   Lauren Nguyen      -> tnguy60\n",
+                                "About",JOptionPane.PLAIN_MESSAGE );
                     }
                 }  // end anonymous inner class
         ); // end call to addActionListener
+
+        JMenuItem help = new JMenuItem("Help");
+        fileMenu.add(help);
+        help.addActionListener(
+                new ActionListener(){  // anonymous inner class
+                    // terminate application when user clicks exitItem
+                    public void actionPerformed(ActionEvent event){
+                        JOptionPane.showMessageDialog( GUI.this,
+                                "Connection:\n" +
+                                        "Gameplay/Rules:\n",
+                                "Help",JOptionPane.PLAIN_MESSAGE );
+                    }
+                }  // end anonymous inner class
+        ); // end call to addActionListener
+
+        JMenuItem stats = new JMenuItem("Stats");
+        fileMenu.add(stats);
+        stats.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        JOptionPane.showMessageDialog(GUI.this,
+                                "Stats:\n   My stats:\n   Opp stats:\n",
+                                "Stats",JOptionPane.PLAIN_MESSAGE );
+                    }
+                }
+        );
         fileMenu.addSeparator();
 
         JMenuItem exit = new JMenuItem("Exit");
@@ -84,8 +116,29 @@ public class GUI extends JFrame implements ActionListener{
                 }  // end anonymous inner class
         ); // end call to addActionListener
 
+        JMenu connect = new JMenu("Connection");
+        JCheckBoxMenuItem host = new JCheckBoxMenuItem("Host");
+        host.addActionListener(
+                new ActionListener(){  // anonymous inner class
+                    public void actionPerformed(ActionEvent event){
+                        //checkOnFill = !checkOnFill;
+                    }
+                }  // end anonymous inner class
+        ); // end call to addActionListener
+        JCheckBoxMenuItem client = new JCheckBoxMenuItem("Client");
+        client.addActionListener(
+                new ActionListener(){  // anonymous inner class
+                    public void actionPerformed(ActionEvent event){
+                        //checkOnFill = !checkOnFill;
+                    }
+                }  // end anonymous inner class
+        ); // end call to addActionListener
+        connect.add(host);
+        connect.add(client);
+
         JMenuBar bar = new JMenuBar();
         setJMenuBar(bar);
         bar.add(fileMenu);
+        bar.add(connect);
     }
 }
