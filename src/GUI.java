@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.management.JMException;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 
 
 public class GUI extends JFrame implements ActionListener{
@@ -28,6 +29,7 @@ public class GUI extends JFrame implements ActionListener{
         ships.setLayout(new BoxLayout(ships, BoxLayout.Y_AXIS));
         setupOceans();
         oceans.setLayout(new BoxLayout(oceans, BoxLayout.Y_AXIS));
+        //oceans.setBorder(new LineBorder(Color.BLACK, 3));
         oceans.add(myPanel);
         oceans.add(oppPanel);
         container.add(oceans, BorderLayout.WEST);
@@ -50,10 +52,19 @@ public class GUI extends JFrame implements ActionListener{
                 oppOcean[i][j] = new Cell(i, j);
                 myOcean[i][j].setText("");
                 oppOcean[i][j].setText("");
-                oppOcean[i][j].setPreferredSize(new Dimension(50, 50));
-                myOcean[i][j].setPreferredSize(new Dimension(50, 50));
+                oppOcean[i][j].setPreferredSize(new Dimension(45, 45));
+                myOcean[i][j].setPreferredSize(new Dimension(45, 45));
                 myOcean[i][j].addActionListener(this);
                 oppOcean[i][j].addActionListener(this);
+                try { //adds image to question mark button
+                    Image water = ImageIO.read(getClass().getResource("batt100.gif"));
+                    oppOcean[i][j].setIcon(new ImageIcon(water));
+                    oppOcean[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                    myOcean[i][j].setIcon(new ImageIcon(water));
+                    myOcean[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 myPanel.add(myOcean[i][j]);
                 oppPanel.add(oppOcean[i][j]);
             }
