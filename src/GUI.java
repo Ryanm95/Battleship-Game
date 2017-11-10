@@ -20,20 +20,29 @@ public class GUI extends JFrame implements ActionListener{
     private JPanel oppPanel = new JPanel(new GridLayout(10, 10, -5, -5));       // holds opp ocean
     private JPanel oceans = new JPanel();       // holds opp and my ocean grid
     private JPanel ships = new JPanel();
-    private final String[] boats = {"Carrier", "BattleShip", "Destroyer", "Submarine", "PatrolBoat"};
+    private JPanel me = new JPanel(new BorderLayout());
+    private JPanel opp = new JPanel(new BorderLayout());
+    private JPanel shipPanel = new JPanel(new BorderLayout());
+    private JPanel statusPanel = new JPanel(new BorderLayout());
+    private JPanel status = new JPanel();
+    private JPanel bottomSide = new JPanel();
+    private Cell[] boats = new Cell[5];
+    private final String[] names = {"Carrier (5)", "Battle Ship (4)", "Destroyer (3)", "Submarine (3)", "Patrol Boat (2)"};
 
 
     public GUI(){
         super("Battleship");
         getContentPane().setBackground(Color.gray);
-        ships.setLayout(new BoxLayout(ships, BoxLayout.Y_AXIS));
+        setupShips();
         setupOceans();
-        oceans.setLayout(new BoxLayout(oceans, BoxLayout.Y_AXIS));
-        //oceans.setBorder(new LineBorder(Color.BLACK, 3));
-        oceans.add(myPanel);
-        oceans.add(oppPanel);
-        container.add(oceans, BorderLayout.WEST);
-        container.add(ships, BorderLayout.EAST);
+        setupOceansPanel();
+        bottomSide.setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
+        setupShipPanel();
+        setupStatusPanel();
+        bottomSide.add(shipPanel);
+        bottomSide.add(statusPanel);
+        container.add(oceans, BorderLayout.NORTH);
+        container.add(bottomSide);
         add(container);
         setupMenu();
         setSize( 1000, 1000 );  //window size
@@ -45,7 +54,50 @@ public class GUI extends JFrame implements ActionListener{
         Cell temp = (Cell) e.getSource();
     }
 
-    private void setupOceans(){
+    private void setupShips(){                  // setup choices for the ships
+        ships.setLayout(new GridLayout(5,3, 40, 30));
+        ships.setPreferredSize(new Dimension(494, 395));
+        for(int i = 0; i < names.length; i++){
+            boats[i] = new Cell(0,0);
+            boats[i].setPreferredSize(new Dimension(30, 10));
+            boats[i].setText(names[i]);
+            boats[i].addActionListener(this);
+            ships.add(boats[i]);
+        }
+    }
+
+    private void setupStatusPanel(){
+        JLabel statusLabel = new JLabel("Status");
+        statusLabel.setHorizontalAlignment(JLabel.CENTER);
+        statusPanel.setPreferredSize(new Dimension(500, 418));
+        statusPanel.add(statusLabel, BorderLayout.NORTH);
+        statusPanel.add(status);
+        statusPanel.setBorder(new LineBorder(Color.BLACK, 3));
+    }
+
+    private void setupShipPanel(){
+        JLabel shipLabel = new JLabel("Ships");
+        shipLabel.setHorizontalAlignment(JLabel.CENTER);
+        shipPanel.add(shipLabel, BorderLayout.NORTH);
+        shipPanel.add(ships);
+        shipPanel.setBorder(new LineBorder(Color.BLACK, 3));
+    }
+
+    private void setupOceansPanel(){
+        oceans.setLayout(new BoxLayout(oceans, BoxLayout.X_AXIS));
+        me.add(myPanel);
+        opp.add(oppPanel);
+        JLabel myGrid = new JLabel("My Grid");
+        JLabel oppGrid = new JLabel("Opponent Grid");
+        myGrid.setHorizontalAlignment(JLabel.CENTER);
+        oppGrid.setHorizontalAlignment(JLabel.CENTER);
+        opp.add(oppGrid, BorderLayout.NORTH);
+        me.add(myGrid, BorderLayout.NORTH);
+        oceans.add(me);
+        oceans.add(opp);
+    }
+
+    private void setupOceans(){             // setup grids to place boats and to shoot ships
         for(int i = 0; i < 10; i++){
             for(int j = 0; j < 10; j++){
                 myOcean[i][j] = new Cell(i, j);
