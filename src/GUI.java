@@ -28,6 +28,7 @@ public class GUI extends JFrame implements ActionListener{
     private JPanel bottomSide = new JPanel();
     private Cell[] boats = new Cell[5];
     private final String[] names = {"Carrier (5)", "Battle Ship (4)", "Destroyer (3)", "Submarine (3)", "Patrol Boat (2)"};
+    private final String[] images = {"carrier.JPG", "battleship.png", "destroyer.png", "sub.png", "patrolboat.jpg"};
 
 
     public GUI(){
@@ -55,14 +56,22 @@ public class GUI extends JFrame implements ActionListener{
     }
 
     private void setupShips(){                  // setup choices for the ships
-        ships.setLayout(new GridLayout(5,3, 40, 30));
+        ships.setLayout(new GridLayout(5,1, 40, 30));
         ships.setPreferredSize(new Dimension(494, 395));
-        for(int i = 0; i < names.length; i++){
-            boats[i] = new Cell(0,0);
+        for(int i = 0; i < names.length; i++) {
+            boats[i] = new Cell(0, 0);
             boats[i].setPreferredSize(new Dimension(30, 10));
             boats[i].setText(names[i]);
             boats[i].addActionListener(this);
-            ships.add(boats[i]);
+            try {
+                Image boat = ImageIO.read(getClass().getResource(images[i]));
+                ImageIcon imageIcon = new ImageIcon(boat);
+                JLabel ship = new JLabel(imageIcon);
+                ships.add(boats[i]);
+                ships.add(ship);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
