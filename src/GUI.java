@@ -16,8 +16,9 @@ import javax.swing.border.LineBorder;
 public class GUI extends JFrame implements ActionListener{
     private Cell[][] myOcean = new Cell[10][10];        // grid where my boats will be on
     private Cell[][] oppOcean = new Cell[10][10];       // grid where opp boats will be
-    private Cell[] choices = new Cell[5];
+    //private Cell[] choices = new Cell[5];
     private Cell[] boats = new Cell[5];
+    private Cell[] orientation = new Cell[2];
 
     private JPanel container = new JPanel(new BorderLayout());      // will hold all panels
     private JPanel myPanel = new JPanel(new GridLayout(10, 10, -5, -5));        // holds my ocean
@@ -34,6 +35,7 @@ public class GUI extends JFrame implements ActionListener{
     private final String[] names = {"Carrier (5)", "Battle Ship (4)", "Destroyer (3)", "Submarine (3)", "Patrol Boat (2)"};
     private final String[] images = {"carrier.JPG", "battleship.png", "destroyer.png", "sub.png", "patrolboat.jpg"};
 
+    private int shipsPlaced;
 
     private boolean isClientConnected = false;
     private boolean isServer = false;
@@ -42,6 +44,8 @@ public class GUI extends JFrame implements ActionListener{
     private boolean clickedOnConnect = false;
     private boolean connected;
     private boolean clickedShipFirst = false;
+    private boolean orientationClicked = false;
+    private boolean myOceanClicked = false;
     boolean running;
     boolean serverContinue;
 
@@ -80,6 +84,7 @@ public class GUI extends JFrame implements ActionListener{
         setupMenu();
         setSize( 1000, 1000 );  //window size
         setVisible( true );
+        shipsPlaced = 0;
     }
 
     public void changeColor(){
@@ -118,23 +123,31 @@ public class GUI extends JFrame implements ActionListener{
 
     public void actionPerformed(ActionEvent e) {        // action listener for oceans
         Cell temp = (Cell) e.getSource();
+        if(!clickedShipFirst && orientationClicked && !myOceanClicked && shipsPlaced < 5){
+            for (int i = 0; i < 10; i++) {        // check if myOcean cell was clicked
+                for (int j = 0; j < 10; j++) {
+                    if (myOcean[i][j].equals(temp)) {
+                        JOptionPane.showMessageDialog(GUI.this,
+                                "Clicked myOcean",
+                                "Clicked", JOptionPane.PLAIN_MESSAGE);
+                        shipsPlaced++;
 
-        for(int i = 0; i < 10; i++){        // check if myOcean cell was clicked
-            for(int j = 0; j < 10; j++){
-                if(myOcean[i][j].equals(temp)){
-                    JOptionPane.showMessageDialog( GUI.this,
-                            "Clicked myOcean",
-                            "Clicked",JOptionPane.PLAIN_MESSAGE );
+                    }
                 }
             }
+            clickedShipFirst = false;
+            orientationClicked = false;
         }
+        if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced == 5) {
+            enableButtons();
 
-        for(int i = 0; i < 10; i++){        // check if oppOcean was clicked
-            for(int j = 0; j < 10; j++){
-                if(oppOcean[i][j].equals(temp)){
-                    JOptionPane.showMessageDialog( GUI.this,
-                            "Clicked oppOcean",
-                            "Clicked",JOptionPane.PLAIN_MESSAGE );
+            for (int i = 0; i < 10; i++) {        // check if oppOcean was clicked
+                for (int j = 0; j < 10; j++) {
+                    if (oppOcean[i][j].equals(temp)) {
+                        JOptionPane.showMessageDialog(GUI.this,
+                                "Clicked oppOcean",
+                                "Clicked", JOptionPane.PLAIN_MESSAGE);
+                    }
                 }
             }
         }
@@ -144,24 +157,39 @@ public class GUI extends JFrame implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
             Cell click = (Cell) e.getSource();
-            for(int i = 0; i < names.length; i++){      // check if ship was clicked
-                if(boats[i].equals(click)){
-                clickedShipFirst = true;
-                boats[i].setEnabled(false);
-//                JOptionPane.showMessageDialog( GUI.this,
-//                        "Clicked ship first",
-//                        "Clicked",JOptionPane.PLAIN_MESSAGE );
+
+            if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
+                for (int i = 0; i < names.length; i++) {      // check if ship was clicked
+
+                    if (boats[i].equals(click)) {
+                        clickedShipFirst = true;
+                        boats[i].setEnabled(false);
+
+//                        JOptionPane.showMessageDialog( GUI.this,
+//                            "Clicked ship first",
+//                            "Clicked",JOptionPane.PLAIN_MESSAGE );
+                    }
+                }
+            }
+
+            if(clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
+                if (orientation[0].equals(click) || orientation[1].equals(click)) {
+//                    JOptionPane.showMessageDialog(GUI.this,
+//                            "Orientation clicked",
+//                            "Clicked", JOptionPane.PLAIN_MESSAGE);
+                    orientationClicked = true;
+                    clickedShipFirst = false;
                 }
             }
         }
     };
 
     private void setupShips(){                  // setup choices for the ships
-        ships.setLayout(new GridLayout(5,1, 40, 30));
+        ships.setLayout(new GridLayout(6,2, 40, 0));
         ships.setPreferredSize(new Dimension(494, 395));
         for(int i = 0; i < names.length; i++) {
             boats[i] = new Cell(0, 0);
-            boats[i].setPreferredSize(new Dimension(30, 10));
+            boats[i].setPreferredSize(new Dimension(15, 10));
             boats[i].setText(names[i]);
             boats[i].addActionListener(boatsListener);
             try {
@@ -174,6 +202,18 @@ public class GUI extends JFrame implements ActionListener{
                 e.printStackTrace();
             }
         }
+        orientation[0] = new Cell(0,0);
+        orientation[0].setPreferredSize(new Dimension(15, 10));
+        orientation[0].setText("Horizontal");
+        orientation[0].addActionListener(boatsListener);
+        ships.add(orientation[0]);
+
+        orientation[1] = new Cell(0,0);
+        orientation[1].setPreferredSize(new Dimension(15, 10));
+        orientation[1].setText("Vertical");
+        orientation[1].addActionListener(boatsListener);
+        ships.add(orientation[1]);
+
     }
 
     private void setupStatusPanel(){
@@ -197,14 +237,22 @@ public class GUI extends JFrame implements ActionListener{
         oceans.setLayout(new BoxLayout(oceans, BoxLayout.X_AXIS));
         me.add(myPanel);
         opp.add(oppPanel);
-        JLabel myGrid = new JLabel("My Grid");
-        JLabel oppGrid = new JLabel("Opponent Grid");
+        JLabel myGrid = new JLabel("My Ocean");
+        JLabel oppGrid = new JLabel("Opponent Ocean");
         myGrid.setHorizontalAlignment(JLabel.CENTER);
         oppGrid.setHorizontalAlignment(JLabel.CENTER);
         opp.add(oppGrid, BorderLayout.NORTH);
         me.add(myGrid, BorderLayout.NORTH);
         oceans.add(me);
         oceans.add(opp);
+    }
+
+    private void enableButtons(){
+        for(int i = 0; i < 10; i++){
+            for(int j = 0; j < 10; j++){
+                oppOcean[i][j].setEnabled(true);
+            }
+        }
     }
 
     private void setupOceans(){             // setup grids to place boats and to shoot ships
@@ -227,6 +275,7 @@ public class GUI extends JFrame implements ActionListener{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                oppOcean[i][j].setEnabled(false);
                 myPanel.add(myOcean[i][j]);
                 oppPanel.add(oppOcean[i][j]);
             }
@@ -299,20 +348,6 @@ public class GUI extends JFrame implements ActionListener{
 
                     public void actionPerformed(ActionEvent event){
                         isServer = true;
-                        System.out.println("babybaby2");
-
-                        if(isClient){
-                            System.out.println("1");
-                        }
-                        else{
-                            System.out.println("2");
-                        }
-                        if(isServer){
-                            System.out.println("3");
-                        }
-                        else{
-                            System.out.println("4");
-                        }
                         setupServerConnection();
 
                     }
@@ -326,6 +361,7 @@ public class GUI extends JFrame implements ActionListener{
                 new ActionListener(){  // anonymous inner class
                     public void actionPerformed(ActionEvent event){
                         if((!isServer) && (!isClient)){
+                            isClient = true;
                             setupClientConnection();
                         }
                     }
@@ -405,7 +441,6 @@ public class GUI extends JFrame implements ActionListener{
                 in = new BufferedReader(new InputStreamReader(
                         echoSocket.getInputStream()));
                 connected = true;
-                isClient = true;
                 connectButton.setText("Disconnect");
             } catch (NumberFormatException e) {
                 history.insert ( "Server Port must be an integer\n", 0);
