@@ -10,11 +10,14 @@ public class Ship {
         this.isSunk = false;
     }
 
-    public boolean getSunk(){
-        return this.isSunk;
+    public boolean determineIfSunk(){
+        if(hitCount == size){
+            isSunk = true;
+        }
+        return isSunk;
     }
 
     public void addHit(){
-        this.hitCount++;
+        hitCount++;
     }
 }

@@ -2,7 +2,7 @@ import javax.swing.*;
 
 public class Cell extends JButton{
 
-    private int row, col, size;
+    private int row, col;
     private boolean clicked;
     private String name;
     private boolean occupied;
