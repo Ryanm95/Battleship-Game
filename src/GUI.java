@@ -11,13 +11,14 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-//import GUI.ssButtonListener;
 
 
 public class GUI extends JFrame implements ActionListener{
     private Cell[][] myOcean = new Cell[10][10];        // grid where my boats will be on
     private Cell[][] oppOcean = new Cell[10][10];       // grid where opp boats will be
     private Cell[] choices = new Cell[5];
+    private Cell[] boats = new Cell[5];
+
     private JPanel container = new JPanel(new BorderLayout());      // will hold all panels
     private JPanel myPanel = new JPanel(new GridLayout(10, 10, -5, -5));        // holds my ocean
     private JPanel oppPanel = new JPanel(new GridLayout(10, 10, -5, -5));       // holds opp ocean
@@ -29,28 +30,35 @@ public class GUI extends JFrame implements ActionListener{
     private JPanel statusPanel = new JPanel(new BorderLayout());
     private JPanel status = new JPanel();
     private JPanel bottomSide = new JPanel();
-    private Cell[] boats = new Cell[5];
+
     private final String[] names = {"Carrier (5)", "Battle Ship (4)", "Destroyer (3)", "Submarine (3)", "Patrol Boat (2)"};
     private final String[] images = {"carrier.JPG", "battleship.png", "destroyer.png", "sub.png", "patrolboat.jpg"};
 
 
-    private boolean isClientConnected = false;  //~~~~~~~~~~~~~~~~~~~~these are changes~~~~~~~~~~~~~~~~~~~~~//
-    private boolean isServer = false;  //~~~~~~~~~~~~~~~~~~~~these are changes~~~~~~~~~~~~~~~~~~~~~//
-    private boolean isClient = false;  //~~~~~~~~~~~~~~~~~~~~these are changes~~~~~~~~~~~~~~~~~~~~~//
-    private boolean startClientConnection=false;    //~~~~~~~~~~~~~~~~~~~~these are changes~~~~~~~~~~~~~~~~~~~~~//
-    private JButton connectButton;
+    private boolean isClientConnected = false;
+    private boolean isServer = false;
+    private boolean isClient = false;
+    private boolean startClientConnection=false;
     private boolean clickedOnConnect = false;
     private boolean connected;
+    private boolean clickedShipFirst = false;
+    boolean running;
+    boolean serverContinue;
+
+
+    private JButton connectButton;
+    JButton ssButton;
+    private JButton connectStatus;
+
+    JLabel machineInfo2;
+    JLabel portInfo2;
+
     private Socket echoSocket;
     private PrintWriter out;
     private BufferedReader in;
-    JButton ssButton;
-    JLabel machineInfo2;
-    JLabel portInfo2;
-    boolean running;
-    boolean serverContinue;
+
     ServerSocket serverSocket;
-    private JButton connectStatus;
+
     private JTextField machineInfo;
     private JTextField portInfo;
     JTextArea history;
@@ -108,9 +116,45 @@ public class GUI extends JFrame implements ActionListener{
     }
 
 
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {        // action listener for oceans
         Cell temp = (Cell) e.getSource();
+
+        for(int i = 0; i < 10; i++){        // check if myOcean cell was clicked
+            for(int j = 0; j < 10; j++){
+                if(myOcean[i][j].equals(temp)){
+                    JOptionPane.showMessageDialog( GUI.this,
+                            "Clicked myOcean",
+                            "Clicked",JOptionPane.PLAIN_MESSAGE );
+                }
+            }
+        }
+
+        for(int i = 0; i < 10; i++){        // check if oppOcean was clicked
+            for(int j = 0; j < 10; j++){
+                if(oppOcean[i][j].equals(temp)){
+                    JOptionPane.showMessageDialog( GUI.this,
+                            "Clicked oppOcean",
+                            "Clicked",JOptionPane.PLAIN_MESSAGE );
+                }
+            }
+        }
     }
+
+    ActionListener boatsListener = new ActionListener() {       // action listener for ships buttons
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Cell click = (Cell) e.getSource();
+            for(int i = 0; i < names.length; i++){      // check if ship was clicked
+                if(boats[i].equals(click)){
+                clickedShipFirst = true;
+                boats[i].setEnabled(false);
+//                JOptionPane.showMessageDialog( GUI.this,
+//                        "Clicked ship first",
+//                        "Clicked",JOptionPane.PLAIN_MESSAGE );
+                }
+            }
+        }
+    };
 
     private void setupShips(){                  // setup choices for the ships
         ships.setLayout(new GridLayout(5,1, 40, 30));
@@ -119,7 +163,7 @@ public class GUI extends JFrame implements ActionListener{
             boats[i] = new Cell(0, 0);
             boats[i].setPreferredSize(new Dimension(30, 10));
             boats[i].setText(names[i]);
-            boats[i].addActionListener(this);
+            boats[i].addActionListener(boatsListener);
             try {
                 Image boat = ImageIO.read(getClass().getResource(images[i]));
                 ImageIcon imageIcon = new ImageIcon(boat);
