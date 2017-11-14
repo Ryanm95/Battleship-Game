@@ -41,14 +41,15 @@ public class GUI extends JFrame implements ActionListener{
     private boolean isServer = false;
     private boolean isClient = false;
     private boolean startClientConnection=false;
-    private boolean clickedOnConnect = false;
+    //private boolean clickedOnConnect = false;
     private boolean connected;
     private boolean clickedShipFirst = false;
     private boolean orientationClicked = false;
     private boolean myOceanClicked = false;
+    private boolean verticalClicked;
+    private boolean horizontalClicked;
     boolean running;
     boolean serverContinue;
-
 
     private JButton connectButton;
     JButton ssButton;
@@ -127,9 +128,11 @@ public class GUI extends JFrame implements ActionListener{
             for (int i = 0; i < 10; i++) {        // check if myOcean cell was clicked
                 for (int j = 0; j < 10; j++) {
                     if (myOcean[i][j].equals(temp)) {
-                        JOptionPane.showMessageDialog(GUI.this,
-                                "Clicked myOcean",
-                                "Clicked", JOptionPane.PLAIN_MESSAGE);
+//                        JOptionPane.showMessageDialog(GUI.this,
+//                                "Clicked myOcean\n" +
+//                                "Horizontal: " + horizontalClicked +
+//                                "\nVertical: " + verticalClicked,
+//                                "Clicked", JOptionPane.PLAIN_MESSAGE);
                         shipsPlaced++;
 
                     }
@@ -159,26 +162,54 @@ public class GUI extends JFrame implements ActionListener{
             Cell click = (Cell) e.getSource();
 
             if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
-                for (int i = 0; i < names.length; i++) {      // check if ship was clicked
 
-                    if (boats[i].equals(click)) {
-                        clickedShipFirst = true;
-                        boats[i].setEnabled(false);
+                if (boats[0].equals(click)) {
+                    clickedShipFirst = true;
+                    boats[0].setEnabled(false);
+                    Ship carrier = new Ship(5);
 
 //                        JOptionPane.showMessageDialog( GUI.this,
 //                            "Clicked ship first",
 //                            "Clicked",JOptionPane.PLAIN_MESSAGE );
-                    }
                 }
+                else if(boats[1].equals(click)) {
+                    clickedShipFirst = true;
+                    boats[1].setEnabled(false);
+                    Ship battleShip = new Ship(4);
+                }
+                else if(boats[2].equals(click)){
+                    clickedShipFirst = true;
+                    boats[2].setEnabled(false);
+                    Ship destroyer = new Ship(3);
+                }
+                else if(boats[3].equals(click)){
+                    clickedShipFirst = true;
+                    boats[3].setEnabled(false);
+                    Ship sub = new Ship(3);
+                }
+                else if(boats[4].equals(click)){
+                    clickedShipFirst = true;
+                    boats[4].setEnabled(false);
+                    Ship patrolBoat = new Ship(2);
+                }
+
+                verticalClicked = false;
+                horizontalClicked = false;
             }
 
             if(clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
-                if (orientation[0].equals(click) || orientation[1].equals(click)) {
+                if (orientation[0].equals(click)) {
 //                    JOptionPane.showMessageDialog(GUI.this,
 //                            "Orientation clicked",
 //                            "Clicked", JOptionPane.PLAIN_MESSAGE);
                     orientationClicked = true;
                     clickedShipFirst = false;
+                    horizontalClicked = true;
+                }
+                else if(orientation[1].equals(click)){
+                    orientationClicked = true;
+                    clickedShipFirst = false;
+                    verticalClicked = true;
                 }
             }
         }
