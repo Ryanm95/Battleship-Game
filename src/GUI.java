@@ -16,7 +16,6 @@ import javax.swing.border.LineBorder;
 public class GUI extends JFrame implements ActionListener{
     private Cell[][] myOcean = new Cell[10][10];        // grid where my boats will be on
     private Cell[][] oppOcean = new Cell[10][10];       // grid where opp boats will be
-    //private Cell[] choices = new Cell[5];
     private Cell[] boats = new Cell[5];
     private Cell[] orientation = new Cell[2];
 
@@ -36,12 +35,12 @@ public class GUI extends JFrame implements ActionListener{
     private final String[] images = {"carrier.JPG", "battleship.png", "destroyer.png", "sub.png", "patrolboat.jpg"};
 
     private int shipsPlaced;
+    private int size;
 
     private boolean isClientConnected = false;
     private boolean isServer = false;
     private boolean isClient = false;
-    private boolean startClientConnection=false;
-    //private boolean clickedOnConnect = false;
+    private boolean startClientConnection = false;
     private boolean connected;
     private boolean clickedShipFirst = false;
     private boolean orientationClicked = false;
@@ -86,6 +85,7 @@ public class GUI extends JFrame implements ActionListener{
         setSize( 1000, 1000 );  //window size
         setVisible( true );
         shipsPlaced = 0;
+        size = 0;
     }
 
     public void changeColor(){
@@ -127,7 +127,11 @@ public class GUI extends JFrame implements ActionListener{
         if(!clickedShipFirst && orientationClicked && !myOceanClicked && shipsPlaced < 5){
             for (int i = 0; i < 10; i++) {        // check if myOcean cell was clicked
                 for (int j = 0; j < 10; j++) {
-                    if (myOcean[i][j].equals(temp)) {
+                    if (myOcean[i][j].equals(temp) && !myOcean[i][j].isOccupied()) {        // if myOcean was clicked and its not occupied
+                        // TODO: add if move isn't valid
+                        if(validPlacement(i, j)){
+                            placeShip(i, j);
+                        }
 //                        JOptionPane.showMessageDialog(GUI.this,
 //                                "Clicked myOcean\n" +
 //                                "Horizontal: " + horizontalClicked +
@@ -167,6 +171,7 @@ public class GUI extends JFrame implements ActionListener{
                     clickedShipFirst = true;
                     boats[0].setEnabled(false);
                     Ship carrier = new Ship(5);
+                    size = carrier.getSize();
 
 //                        JOptionPane.showMessageDialog( GUI.this,
 //                            "Clicked ship first",
@@ -176,21 +181,25 @@ public class GUI extends JFrame implements ActionListener{
                     clickedShipFirst = true;
                     boats[1].setEnabled(false);
                     Ship battleShip = new Ship(4);
+                    size = battleShip.getSize();
                 }
                 else if(boats[2].equals(click)){
                     clickedShipFirst = true;
                     boats[2].setEnabled(false);
                     Ship destroyer = new Ship(3);
+                    size = destroyer.getSize();
                 }
                 else if(boats[3].equals(click)){
                     clickedShipFirst = true;
                     boats[3].setEnabled(false);
                     Ship sub = new Ship(3);
+                    size = sub.getSize();
                 }
                 else if(boats[4].equals(click)){
                     clickedShipFirst = true;
                     boats[4].setEnabled(false);
                     Ship patrolBoat = new Ship(2);
+                    size = patrolBoat.getSize();
                 }
 
                 verticalClicked = false;
@@ -285,6 +294,99 @@ public class GUI extends JFrame implements ActionListener{
             }
         }
     }
+
+    private boolean validPlacement(int i, int j){
+        if(verticalClicked){        // check vertical placement
+            if(i + size <= 10){      // doesnt go off board
+                for(int y = i; y < i + size; y++){      // spots where other parts of the ship should go not taken
+                    if(myOcean[y][j].isOccupied()){
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        else if(horizontalClicked){       // check horizontal placement
+            if(j + size <= 10){      // doesnt go off board
+                for(int y = j; y < j + size; y++){      // spots where other parts of the ship should go not taken
+                    if(myOcean[i][y].isOccupied()){
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void placeShip(int i, int j){
+        if(verticalClicked) {
+            for (int a = i; a < i + size; a++) {
+                if (a == i) {
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt6.gif"));
+                        myOcean[a][j].setIcon(new ImageIcon(bottomShip));
+                        myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if (a == i + size - 1) {
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt10.gif"));
+                        myOcean[a][j].setIcon(new ImageIcon(bottomShip));
+                        myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {     // TODO: add if not the last piece. add so middle pieces get rotated
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt9.gif"));
+                        myOcean[a][j].setIcon(new ImageIcon(bottomShip));
+                        myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                myOcean[a][j].setOccupied(true);
+                // TODO: set name of ship in cell
+            }
+        }
+        else if(horizontalClicked){
+            for (int a = j; a < j + size; a++) {
+                if (a == j) {
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt1.gif"));
+                        myOcean[i][a].setIcon(new ImageIcon(bottomShip));
+                        myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if (a == j + size - 1) {
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt5.gif"));
+                        myOcean[i][a].setIcon(new ImageIcon(bottomShip));
+                        myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {     // TODO: add if not the last piece. add so middle pieces get rotated
+                    try { //adds image to question mark button
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt3.gif"));
+                        myOcean[i][a].setIcon(new ImageIcon(bottomShip));
+                        myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                myOcean[i][a].setOccupied(true);
+            }
+        }
+    }
+
 
     private void setupOceans(){             // setup grids to place boats and to shoot ships
         for(int i = 0; i < 10; i++){

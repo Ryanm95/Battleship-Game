@@ -16,10 +16,18 @@ public class Cell extends JButton{
     }
 
     public boolean alreadyClicked(){
-        return this.clicked;
+        return clicked;
     }
 
     public void setClicked(boolean click){
         this.clicked = click;
+    }
+
+    public boolean isOccupied(){
+        return occupied;
+    }
+
+    public void setOccupied(boolean occupied){
+        this.occupied = occupied;
     }
 }

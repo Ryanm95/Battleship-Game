@@ -20,4 +20,8 @@ public class Ship {
     public void addHit(){
         hitCount++;
     }
+
+    public int getSize(){
+        return size;
+    }
 }
