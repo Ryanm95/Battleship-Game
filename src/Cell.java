@@ -30,4 +30,12 @@ public class Cell extends JButton{
     public void setOccupied(boolean occupied){
         this.occupied = occupied;
     }
+
+    public int getRow(){
+        return row;
+    }
+
+    public int getCol(){
+        return col;
+    }
 }
