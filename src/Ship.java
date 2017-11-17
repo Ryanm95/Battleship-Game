@@ -1,3 +1,5 @@
+// Ship class holds the sizes and names of the ship
+
 public class Ship {
 
     private int hitCount;
@@ -10,18 +12,22 @@ public class Ship {
         this.isSunk = false;
     }
 
-    public boolean determineIfSunk(){
+    public boolean determineIfSunk(){       // to determine if sunk
         if(hitCount == size){
             isSunk = true;
         }
         return isSunk;
     }
 
-    public void addHit(){
+    public void addHit(){   // add hit to ship
         hitCount++;
     }
 
-    public int getSize(){
+    public int getSize(){       // get size of ship
         return size;
+    }
+
+    public int getHitCount(){       // get hit count of ship
+        return hitCount;
     }
 }

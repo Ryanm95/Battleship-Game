@@ -37,6 +37,13 @@ public class GUI extends JFrame implements ActionListener{
 
     private int shipsPlaced;
     private int size;
+    private int totalHits = 0;
+    private int totalMisses = 0;
+    private int total = 0;
+
+    private char name;
+
+    private Ship carrier, battleShip, destroyer, sub, patrolBoat;
 
     private boolean isClientConnected = false;
     private boolean isServer = false;
@@ -76,7 +83,7 @@ public class GUI extends JFrame implements ActionListener{
     private String machineAddress;
     private Integer[] num = new Integer[1];
 
-    public GUI(){
+    public GUI(){                                   // constructor
         super("Battleship");
         getContentPane().setBackground(Color.gray);
         setupShips();
@@ -97,45 +104,13 @@ public class GUI extends JFrame implements ActionListener{
         size = 0;
     }
 
-    public void changeColor(){
-        //System.out.println("repaint");
-        connectStatus.repaint();
-        connectStatus.setBackground(Color.GREEN);
-        connectStatus.setOpaque(true);
-    }
 
-    public void setisClient(boolean input){
+    public void setisClient(boolean input){     // to see if it is the client
         isClient = input;
-    }
-
-    public void setisServer(boolean input){
-        isServer = input;
-    }
-
-    public boolean getisClient(){
-        //System.out.println("in gui.java isClient");
-        return isClient;
-    }
-
-    public boolean getisServer(){
-        //System.out.println("in gui.java isSever");
-        return isServer;
-    }
-
-    public void setisClientConnect(boolean input){
-        isClientConnected = input;
-    }
-
-    public boolean getStartClientConnection(){
-        return startClientConnection;
     }
 
 
     public void actionPerformed(ActionEvent e) {        // action listener for oceans
-        int receivedX;
-        int receivedY;
-        //portNum = temp.getPort();
-        //System.out.println();
         Cell temp = (Cell) e.getSource();
         if(!clickedShipFirst && orientationClicked && !myOceanClicked && shipsPlaced < 5){
             for (int i = 0; i < 10; i++) {        // check if myOcean cell was clicked
@@ -145,11 +120,6 @@ public class GUI extends JFrame implements ActionListener{
                         if(validPlacement(i, j)){
                             placeShip(i, j);
                         }
-//                        JOptionPane.showMessageDialog(GUI.this,
-//                                "Clicked myOcean\n" +
-//                                "Horizontal: " + horizontalClicked +
-//                                "\nVertical: " + verticalClicked,
-//                                "Clicked", JOptionPane.PLAIN_MESSAGE);
                         shipsPlaced++;
 
                     }
@@ -158,91 +128,52 @@ public class GUI extends JFrame implements ActionListener{
             clickedShipFirst = false;
             orientationClicked = false;
         }
-        if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced == 5) {
+        if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced == 5) {       // if all the ships have been placed
             enableButtons();
             placedAllShips = true;
 
             for (int i = 0; i < 10; i++) {        // check if oppOcean was clicked
                 for (int j = 0; j < 10; j++) {
-                    if (oppOcean[i][j].equals(temp)) {
-                        JOptionPane.showMessageDialog(GUI.this,
-                                "Clicked oppOcean",
-                                "Clicked", JOptionPane.PLAIN_MESSAGE);
+                    if (oppOcean[i][j].equals(temp) && !oppOcean[i][j].alreadyClicked()) {
+//                        JOptionPane.showMessageDialog(GUI.this,
+//                                "Clicked oppOcean\n" +
+//                                        "Ship: " + oppOcean[i][j].getFirstChar() + "\n",
+//                                "Clicked", JOptionPane.PLAIN_MESSAGE);
 
-                        //sr = new Serialize(oppOcean[i][j]);
-                       // System.out.println("aaaa");
+                        oppOcean[i][j].setClicked();
                         try {
                             int hit;
-                            System.out.println("bbbbb");
-                            System.out.println(portNum);
-                            //System.out.println(num[0]);
-                            //System.out.println(portInfo.getText());
-                            System.out.println(machineAddress);
-                            machineAddress = machineInfo.getText();
-                            echoSocket = new Socket(machineAddress, portNum );
-                            Scanner sc1 = new Scanner(echoSocket.getInputStream());
-                            //PrintStream p = new PrintStream(echoSocket.getOutputStream());
+                            machineAddress = machineInfo.getText();     // get address
+                            echoSocket = new Socket(machineAddress, portNum);       // new socket
+                            Scanner sc1 = new Scanner(echoSocket.getInputStream());     // scanner
                             PrintWriter output = new PrintWriter(echoSocket.getOutputStream(), true);
-                            //String xString = Integer.toString(i);
-                            //String yString = Integer.toString(j);
-                            //String coor = xString + yString;
 
-                            output.println(i);
+
+                            output.println(i);  // send coordinates
                             output.println(j);
-                            hit = sc1.nextInt();
+                            hit = sc1.nextInt();        // recieve coordinates
 
 
-							if(hit == 1){
-								System.out.println("hit");
-							}
-							else{
-								System.out.println("missed");
-							}
-
-
-
+                            if (hit == 1) {     // if it was a hit
+                                Image hitShip = ImageIO.read(getClass().getResource("batt103.gif"));
+                                oppOcean[i][j].setIcon(new ImageIcon(hitShip));
+                                oppOcean[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                                totalHits++;
+                                total++;
+                            } else {        // not a hit
+                                Image missed = ImageIO.read(getClass().getResource("batt102.gif"));
+                                oppOcean[i][j].setIcon(new ImageIcon(missed));
+                                oppOcean[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
+                                total++;
+                                totalMisses++;
+                            }
                         } catch (IOException e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     }
                 }
             }
         }
-//        if(isServer){
-//
-//            if(placingShipsStage && placedAllShips){
-//                System.out.println("innnnnn");
-//
-//                try {
-//                    Socket ss= serverSocket.accept();
-//                    Scanner sc = new Scanner(ss.getInputStream());
-//                    receivedX = sc.nextInt();
-//                    receivedY = sc.nextInt();
-//
-//                    System.out.println(receivedX + " - " + receivedY);
-//                    //int x = sentCoor.charAt(0);
-//                    //int y = sentCoor.charAt(1);
-//
-////    				PrintStream p = new PrintStream(ss.getOutputStream());
-////    				if(myOcean[x][y].isOccupied()){
-////    					p.println(true);
-////    				}
-////    				else{
-////    					p.println(false);
-////    				}
-//
-//
-//
-//                } catch (IOException e1) {
-//                    // TODO Auto-generated catch block
-//                    e1.printStackTrace();
-//                }
-//
-//            }
-//        }
-
-
     }
 
     ActionListener boatsListener = new ActionListener() {       // action listener for ships buttons
@@ -251,41 +182,42 @@ public class GUI extends JFrame implements ActionListener{
             Cell click = (Cell) e.getSource();
 
             if(placingShipsStage){
-                if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
+                if(!clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {        // still placing ships
 
-                    if (boats[0].equals(click)) {
+                    if (boats[0].equals(click)) {       // determine what ship it is and the size
                         clickedShipFirst = true;
                         boats[0].setEnabled(false);
-                        Ship carrier = new Ship(5);
+                        carrier = new Ship(5);
                         size = carrier.getSize();
-
-//                            JOptionPane.showMessageDialog( GUI.this,
-//                                "Clicked ship first",
-//                                "Clicked",JOptionPane.PLAIN_MESSAGE );
+                        name = 'c';
                     }
-                    else if(boats[1].equals(click)) {
+                    else if(boats[1].equals(click)) {       // determine what ship it is and the size
                         clickedShipFirst = true;
                         boats[1].setEnabled(false);
-                        Ship battleShip = new Ship(4);
+                        battleShip = new Ship(4);
                         size = battleShip.getSize();
+                        name = 'b';
                     }
-                    else if(boats[2].equals(click)){
+                    else if(boats[2].equals(click)){        // determine what ship it is and the size
                         clickedShipFirst = true;
                         boats[2].setEnabled(false);
-                        Ship destroyer = new Ship(3);
+                        destroyer = new Ship(3);
                         size = destroyer.getSize();
+                        name = 'd';
                     }
-                    else if(boats[3].equals(click)){
+                    else if(boats[3].equals(click)){        // determine what ship it is and the size
                         clickedShipFirst = true;
                         boats[3].setEnabled(false);
-                        Ship sub = new Ship(3);
+                        sub = new Ship(3);
                         size = sub.getSize();
+                        name = 's';
                     }
-                    else if(boats[4].equals(click)){
+                    else if(boats[4].equals(click)){        // determine what ship it is and the size
                         clickedShipFirst = true;
                         boats[4].setEnabled(false);
-                        Ship patrolBoat = new Ship(2);
+                        patrolBoat = new Ship(2);
                         size = patrolBoat.getSize();
+                        name = 'p';
                     }
 
                     verticalClicked = false;
@@ -294,16 +226,13 @@ public class GUI extends JFrame implements ActionListener{
             }
 
 
-            if(clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {
-                if (orientation[0].equals(click)) {
-//                    JOptionPane.showMessageDialog(GUI.this,
-//                            "Orientation clicked",
-//                            "Clicked", JOptionPane.PLAIN_MESSAGE);
+            if(clickedShipFirst && !orientationClicked && !myOceanClicked && shipsPlaced < 5) {     // to see what orientation the ship needs to be
+                if (orientation[0].equals(click)) {     // horizontal
                     orientationClicked = true;
                     clickedShipFirst = false;
                     horizontalClicked = true;
                 }
-                else if(orientation[1].equals(click)){
+                else if(orientation[1].equals(click)){      // vertical
                     orientationClicked = true;
                     clickedShipFirst = false;
                     verticalClicked = true;
@@ -321,7 +250,7 @@ public class GUI extends JFrame implements ActionListener{
             boats[i].setText(names[i]);
             boats[i].addActionListener(boatsListener);
             try {
-                Image boat = ImageIO.read(getClass().getResource(images[i]));
+                Image boat = ImageIO.read(getClass().getResource(images[i]));       // add images to buttons
                 ImageIcon imageIcon = new ImageIcon(boat);
                 JLabel ship = new JLabel(imageIcon);
                 ships.add(boats[i]);
@@ -330,13 +259,13 @@ public class GUI extends JFrame implements ActionListener{
                 e.printStackTrace();
             }
         }
-        orientation[0] = new Cell(0,0);
+        orientation[0] = new Cell(0,0);                             // add orientation of ships
         orientation[0].setPreferredSize(new Dimension(15, 10));
         orientation[0].setText("Horizontal");
         orientation[0].addActionListener(boatsListener);
         ships.add(orientation[0]);
 
-        orientation[1] = new Cell(0,0);
+        orientation[1] = new Cell(0,0);                              // add orientation of ships
         orientation[1].setPreferredSize(new Dimension(15, 10));
         orientation[1].setText("Vertical");
         orientation[1].addActionListener(boatsListener);
@@ -344,7 +273,7 @@ public class GUI extends JFrame implements ActionListener{
 
     }
 
-    private void setupStatusPanel(){
+    private void setupStatusPanel(){                                    // sets up the status panel
         JLabel statusLabel = new JLabel("Status");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         statusPanel.setPreferredSize(new Dimension(500, 418));
@@ -353,7 +282,7 @@ public class GUI extends JFrame implements ActionListener{
         statusPanel.setBorder(new LineBorder(Color.BLACK, 3));
     }
 
-    private void setupShipPanel(){
+    private void setupShipPanel(){                                   // sets up the ships panel
         JLabel shipLabel = new JLabel("Ships");
         shipLabel.setHorizontalAlignment(JLabel.CENTER);
         shipPanel.add(shipLabel, BorderLayout.NORTH);
@@ -361,7 +290,7 @@ public class GUI extends JFrame implements ActionListener{
         shipPanel.setBorder(new LineBorder(Color.BLACK, 3));
     }
 
-    private void setupOceansPanel(){
+    private void setupOceansPanel(){                                // sets up ocean panel
         oceans.setLayout(new BoxLayout(oceans, BoxLayout.X_AXIS));
         me.add(myPanel);
         opp.add(oppPanel);
@@ -375,7 +304,7 @@ public class GUI extends JFrame implements ActionListener{
         oceans.add(opp);
     }
 
-    private void enableButtons(){
+    private void enableButtons(){                   // enables the cells to be clicked
         for(int i = 0; i < 10; i++){
             for(int j = 0; j < 10; j++){
                 oppOcean[i][j].setEnabled(true);
@@ -383,7 +312,7 @@ public class GUI extends JFrame implements ActionListener{
         }
     }
 
-    private boolean validPlacement(int i, int j){
+    private boolean validPlacement(int i, int j){           // check it valid placement
         if(verticalClicked){        // check vertical placement
             if(i + size <= 10){      // doesnt go off board
                 for(int y = i; y < i + size; y++){      // spots where other parts of the ship should go not taken
@@ -407,12 +336,12 @@ public class GUI extends JFrame implements ActionListener{
         return false;
     }
 
-    private void placeShip(int i, int j){
+    private void placeShip(int i, int j){       // places ship on board
         if(verticalClicked) {
             for (int a = i; a < i + size; a++) {
                 if (a == i) {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt6.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt6.gif"));       // types of image
                         myOcean[a][j].setIcon(new ImageIcon(bottomShip));
                         myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
@@ -421,15 +350,15 @@ public class GUI extends JFrame implements ActionListener{
                 }
                 else if (a == i + size - 1) {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt10.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt10.gif"));       // types of image
                         myOcean[a][j].setIcon(new ImageIcon(bottomShip));
                         myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else {     // TODO: add if not the last piece. add so middle pieces get rotated
+                } else {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt9.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt9.gif"));       // types of image
                         myOcean[a][j].setIcon(new ImageIcon(bottomShip));
                         myOcean[a][j].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
@@ -438,14 +367,14 @@ public class GUI extends JFrame implements ActionListener{
                 }
 
                 myOcean[a][j].setOccupied(true);
-                // TODO: set name of ship in cell
+                myOcean[a][j].setName(name);
             }
         }
         else if(horizontalClicked){
             for (int a = j; a < j + size; a++) {
                 if (a == j) {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt1.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt1.gif"));       // types of image
                         myOcean[i][a].setIcon(new ImageIcon(bottomShip));
                         myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
@@ -454,15 +383,15 @@ public class GUI extends JFrame implements ActionListener{
                 }
                 else if (a == j + size - 1) {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt5.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt5.gif"));       // types of image
                         myOcean[i][a].setIcon(new ImageIcon(bottomShip));
                         myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else {     // TODO: add if not the last piece. add so middle pieces get rotated
+                } else {
                     try { //adds image to question mark button
-                        Image bottomShip = ImageIO.read(getClass().getResource("batt3.gif"));
+                        Image bottomShip = ImageIO.read(getClass().getResource("batt3.gif"));       // types of image
                         myOcean[i][a].setIcon(new ImageIcon(bottomShip));
                         myOcean[i][a].setHorizontalTextPosition(SwingConstants.CENTER);
                     } catch (IOException e) {
@@ -471,6 +400,7 @@ public class GUI extends JFrame implements ActionListener{
                 }
 
                 myOcean[i][a].setOccupied(true);
+                myOcean[i][a].setName(name);
             }
         }
     }
@@ -487,8 +417,8 @@ public class GUI extends JFrame implements ActionListener{
                 myOcean[i][j].setPreferredSize(new Dimension(45, 45));
                 myOcean[i][j].addActionListener(this);
                 oppOcean[i][j].addActionListener(this);
-                try { //adds image to question mark button
-                    Image water = ImageIO.read(getClass().getResource("batt100.gif"));
+                try {
+                    Image water = ImageIO.read(getClass().getResource("batt100.gif"));      //adds image to question mark button
                     oppOcean[i][j].setIcon(new ImageIcon(water));
                     oppOcean[i][j].setHorizontalTextPosition(SwingConstants.CENTER);
                     myOcean[i][j].setIcon(new ImageIcon(water));
@@ -503,7 +433,7 @@ public class GUI extends JFrame implements ActionListener{
         }
     }
 
-    private void setupMenu(){
+    private void setupMenu(){                   // to setup menu items
         JMenu fileMenu = new JMenu("File");
 
         JMenuItem about = new JMenuItem("About");
@@ -520,34 +450,39 @@ public class GUI extends JFrame implements ActionListener{
                 }  // end anonymous inner class
         ); // end call to addActionListener
 
-        JMenuItem help = new JMenuItem("Help");
+        JMenuItem help = new JMenuItem("Help");                 // add help items to menu
         fileMenu.add(help);
         help.addActionListener(
                 new ActionListener(){  // anonymous inner class
                     // terminate application when user clicks exitItem
                     public void actionPerformed(ActionEvent event){
                         JOptionPane.showMessageDialog( GUI.this,
-                                "Connection:\n" +
-                                        "Gameplay/Rules:\n",
+                                "1.Connection:\n" + "Click on Connection -> Click on either Server or Client\n\n" +
+                                        "2.Gameplay / Rules:\n" + "After the connection is established,"
+                                        + " place your ships on your ocean, fire at opponent's ocean and wait"
+                                        + " for your turn again.\n" + "If all your ships are sunk first, you lose. "
+                                        + "If opponent's ships are sunk first, you win.",
                                 "Help",JOptionPane.PLAIN_MESSAGE );
                     }
                 }  // end anonymous inner class
         ); // end call to addActionListener
 
-        JMenuItem stats = new JMenuItem("Stats");
+        JMenuItem stats = new JMenuItem("Stats");               // add stats to the menus
         fileMenu.add(stats);
         stats.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         JOptionPane.showMessageDialog(GUI.this,
-                                "Stats:\n   My stats:\n   Opp stats:\n",
+                                "My Stats:\n   Total hits: " + totalHits +
+                                "\n   Total misses: " + totalMisses +
+                                "\n   Percent hits: " + (float)((totalHits * 100.0f) / total) + "%\n",
                                 "Stats",JOptionPane.PLAIN_MESSAGE );
                     }
                 }
         );
         fileMenu.addSeparator();
 
-        JMenuItem exit = new JMenuItem("Exit");
+        JMenuItem exit = new JMenuItem("Exit");         // if the click exit
         fileMenu.add(exit);
         exit.addActionListener(
                 new ActionListener(){  // anonymous inner class
@@ -561,13 +496,13 @@ public class GUI extends JFrame implements ActionListener{
 
         JCheckBoxMenuItem host = null;
         JCheckBoxMenuItem client = null;
-        JMenu connect = new JMenu("Connection");
+        JMenu connect = new JMenu("Connection");            // make a connection menu
 
         host= new JCheckBoxMenuItem("Host");
         host.addActionListener(
                 new ActionListener(){  // anonymous inner class
 
-                    public void actionPerformed(ActionEvent event){
+                    public void actionPerformed(ActionEvent event){     // if is the server
                         if((!isServer) && (!isClient)){
                             isServer = true;
                             setupServerConnection();
@@ -579,7 +514,7 @@ public class GUI extends JFrame implements ActionListener{
 
 
 
-        client = new JCheckBoxMenuItem("Connect");
+        client = new JCheckBoxMenuItem("Connect");          // add connect to the menu to connect client to server
         client.addActionListener(
                 new ActionListener(){  // anonymous inner class
                     public void actionPerformed(ActionEvent event){
@@ -592,7 +527,7 @@ public class GUI extends JFrame implements ActionListener{
         ); // end call to addActionListener
 
 
-        connect.add(host);
+        connect.add(host);                  // add components to the menu bar
         connect.add(client);
 
         JMenuBar bar = new JMenuBar();
@@ -601,10 +536,12 @@ public class GUI extends JFrame implements ActionListener{
         bar.add(connect);
     }
 
+    private void setupClientConnection(){       // panel to setup client connection
 
+        /*
 
-
-    private void setupClientConnection(){
+        All of this code is Professor Troy's code
+         */
 
         JPanel anotherPanel = new JPanel ();
         anotherPanel.setLayout(new GridLayout(1,1));
@@ -630,7 +567,7 @@ public class GUI extends JFrame implements ActionListener{
                 new ActionListener() {
                     public void actionPerformed( ActionEvent event )
                     {
-                        doManageConnection();
+                        doManageConnection();                           // function to manage connection
                     }
 
                 }
@@ -640,9 +577,8 @@ public class GUI extends JFrame implements ActionListener{
         history = new JTextArea ( 10, 10 );
         history.setPreferredSize(new Dimension(30, 30));
         history.setEditable(false);
-        //upperPanel.add( new JScrollPane(history) ,  BorderLayout.SOUTH);
 
-        anotherPanel.add(upperPanel, BorderLayout.WEST);
+        anotherPanel.add(upperPanel, BorderLayout.WEST);                    // setup the panel for the status and add the components
         anotherPanel.add(new JScrollPane(history) , BorderLayout.EAST);
         status.add(anotherPanel, BorderLayout.CENTER);
         upperPanel.setPreferredSize(new Dimension(400, 60));
@@ -650,28 +586,23 @@ public class GUI extends JFrame implements ActionListener{
         anotherPanel.setBorder(new LineBorder(Color.black, 1));
     }
 
-    public void doManageConnection()
+    public void doManageConnection()        // function to manage connection
     {
         if (connected == false)
         {
             String machineName = null;
 
             try {
-                machineName = machineInfo.getText();
+                machineName = machineInfo.getText();                // get the IP address and info related to the server and client
                 portNum = Integer.parseInt(portInfo.getText());
-                System.out.println("port: " + portInfo.getText());
-                //num = portNum;
                 echoSocket = new Socket(machineName, portNum );
                 out = new PrintWriter(echoSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(
                         echoSocket.getInputStream()));
                 connected = true;
                 connectButton.setText("Disconnect");
-
-
-
-
                 placingShips();
+
             } catch (NumberFormatException e) {
                 history.insert ( "Server Port must be an integer\n", 0);
             } catch (UnknownHostException e) {
@@ -680,12 +611,10 @@ public class GUI extends JFrame implements ActionListener{
                 history.insert ("Couldn't get I/O for "
                         + "the connection to: " + machineName + "\n", 0);
             }
-
         }
         else
         {
-            try
-            {
+            try{             // if exception was encountered
                 out.close();
                 in.close();
                 echoSocket.close();
@@ -698,11 +627,9 @@ public class GUI extends JFrame implements ActionListener{
                 history.insert ("Error in closing down Socket ", 0);
             }
         }
-
-
     }
 
-    private void setupServerConnection(){
+    private void setupServerConnection(){                       // method to setup server connection
         JPanel anotherPanel = new JPanel ();
         anotherPanel.setLayout(new GridLayout(1,1));
 
@@ -718,7 +645,7 @@ public class GUI extends JFrame implements ActionListener{
         machineAddress = null;
         try
         {
-            InetAddress addr = InetAddress.getLocalHost();
+            InetAddress addr = InetAddress.getLocalHost();      // get IP address
             machineAddress = addr.getHostAddress();
             //machineAddress = "127.0.0.1";
 
@@ -728,7 +655,7 @@ public class GUI extends JFrame implements ActionListener{
             machineAddress = "127.0.0.1";
         }
 
-        machineInfo2 = new JLabel (machineAddress);
+        machineInfo2 = new JLabel (machineAddress);     // machine address
         upperPanel.add( machineInfo2 );
 
         portInfo2 = new JLabel (" Not Listening ");
@@ -740,7 +667,7 @@ public class GUI extends JFrame implements ActionListener{
         history.setEditable(false);
 
         anotherPanel.add(upperPanel, BorderLayout.WEST);
-        anotherPanel.add(new JScrollPane(history));
+        anotherPanel.add(new JScrollPane(history));                                 // add it to the pane
         status.add(anotherPanel, BorderLayout.CENTER);
         upperPanel.setPreferredSize(new Dimension(400, 60));
         anotherPanel.setPreferredSize(new Dimension(480, 50));
@@ -753,7 +680,7 @@ public class GUI extends JFrame implements ActionListener{
     int yCoor = -1;
     private int count = 0;
 
-    class ssButtonListener implements  ActionListener{
+    class ssButtonListener implements  ActionListener{          // actionlistener for connect buttons
         public void actionPerformed(ActionEvent e){
 
             if (running == false)
@@ -770,31 +697,47 @@ public class GUI extends JFrame implements ActionListener{
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
 
-            portNum = temp.getPort();
+            portNum = temp.getPort();           // get port number
             xCoor = temp.getXCoor();
             yCoor = temp.getYCoor();
-            System.out.println("x-y received: " + xCoor + " - " + yCoor);
-
-
-
         }
     }
 
 
-    public int getCount(){
-        return count;
-    }
+    public boolean checkCoor(int xFromClass, int yFromClass){           // check if the coordinate is a hit or miss
 
-    public boolean checkCoor(int xFromClass, int yFromClass){
         if(myOcean[xFromClass][yFromClass].isOccupied()){
+            try {
+                Image hitShip = ImageIO.read(getClass().getResource("batt103.gif"));
+                myOcean[xFromClass][yFromClass].setIcon(new ImageIcon(hitShip));
+                myOcean[xFromClass][yFromClass].setHorizontalTextPosition(SwingConstants.CENTER);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(myOcean[xFromClass][yFromClass].getFirstChar() == 'c'){          // name of ship
+                carrier.addHit();
+            }
+            else if(myOcean[xFromClass][yFromClass].getFirstChar() == 'b'){     // name of ship
+                battleShip.addHit();
+            }
+            else if(myOcean[xFromClass][yFromClass].getFirstChar() == 's'){     // name of ship
+                sub.addHit();
+            }
+            else if(myOcean[xFromClass][yFromClass].getFirstChar() == 'p'){     // name of ship
+                patrolBoat.addHit();
+            }
+            else if(myOcean[xFromClass][yFromClass].getFirstChar() == 'd'){     // name of ship
+                destroyer.addHit();
+            }
             return true;
         }
         return false;
     }
+
+
 
     public void placingShips(){
         JLabel placeInfo1 = new JLabel();
@@ -815,18 +758,18 @@ public class GUI extends JFrame implements ActionListener{
             upperPanel.add( placeInfo2);
             upperPanel.add( placeInfo3);
 
-            //anotherPanel.add(upperPanel, BorderLayout.WEST);
             status.add(upperPanel);
+
+            count++;
+            if(count > 1){
+                upperPanel.setVisible(false);
+            }
             upperPanel.setBackground(Color.PINK);
-            //status.add(anotherPanel);
             upperPanel.setPreferredSize(new Dimension(480, 150));
-            //anotherPanel.setPreferredSize(new Dimension(480, 50));
             upperPanel.setBorder(new LineBorder(Color.black, 1));
 
             placingShipsStage = true;
-
         }
-
     }
 
 
@@ -919,7 +862,6 @@ class ConnectionThread extends Thread
 
 class CommunicationThread extends Thread
 {
-    //private boolean serverContinue = true;
     private Socket clientSocket;
     private GUI gui;
     private int x,y;
@@ -933,7 +875,7 @@ class CommunicationThread extends Thread
             start();
 
 
-            gui.history.insert("Communicating with Port" + clientSocket.getLocalPort() + "\n", 0);
+            gui.history.insert("Communicating with Port " + clientSocket.getLocalPort() + "\n", 0);
             gui.placingShips();
 
     }
@@ -961,37 +903,18 @@ class CommunicationThread extends Thread
                         true);
                 inn = new Scanner(clientSocket.getInputStream());
 
-                int inputLine = 0;
                 int [] coor = new int [2];
-                int i = 0;
-
-                System.out.println("Before While");
-
-//                while (inputLine != -1)
-//                {
-//                    coor[i] = inn.nextInt();
-//                    i++;
-//
-//                    //gui.history.insert (inputLine+"\n", 0);
-//                    //out.println(inputLine);
-//
-//                    //if (inputLine.equals("Bye."))
-//                    //  break;
-//
-//                    //if (inputLine.equals("End Server."))
-//                    //  gui.serverContinue = false;
-//                }
 
                 coor[0] = inn.nextInt();
                 coor[1] = inn.nextInt();
                 x = coor[0];
                 y = coor[1];
-                System.out.println ("x-y: " + x + " - " + y);
-
 
                 if(gui.checkCoor(x, y)){
+
                     System.out.println("hit");
                     out.println(1);
+
                 }
                 else{
                     System.out.println("miss");
@@ -1026,24 +949,11 @@ class CommunicationThread extends Thread
                 out.close();
                 in.close();
                 clientSocket.close();
-
             }
-
-
-
         }
         catch (IOException e)
         {
             System.err.println("Problem with Communication Server");
-            //System.exit(1);
         }
     }
 }
-
-
-
-
-
-
-
-
